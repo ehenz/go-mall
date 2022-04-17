@@ -7,7 +7,7 @@
         "port":3306,
         "db":"mshop_goods_srv",
         "user":"root",
-        "password":"root"
+        "password":"root132456"
     },
     "consul":{
         "host":"106.13.213.235",

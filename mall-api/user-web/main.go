@@ -6,22 +6,24 @@ import (
 	"mall-api/user-web/global"
 	"mall-api/user-web/initialize"
 	"mall-api/user-web/utils"
-	myvalidator "mall-api/user-web/validator"
+	"mall-api/user-web/utils/register/consul"
+	"os"
+	"os/signal"
+	"syscall"
 
-	ut "github.com/go-playground/universal-translator"
-
-	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator/v10"
+	"github.com/nacos-group/nacos-sdk-go/inner/uuid"
 
 	"go.uber.org/zap"
 )
 
 func main() {
+	c := global.SrvConfig
+
 	debug := flag.Bool("debug", true, "是否以debug模式启动")
 	if *debug == true {
-		global.SrvConfig.UserApiConfig.Port = 8080
+		c.Port = 8080
 	} else {
-		global.SrvConfig.UserApiConfig.Port, _ = utils.GetFreePort()
+		c.Port, _ = utils.GetFreePort()
 	}
 
 	// 初始化logger
@@ -34,20 +36,26 @@ func main() {
 	_ = initialize.InitTrans("zh")
 	// 初始化rpc服务客户端
 	initialize.InitSrvClient()
+	// 初始化验证器及其错误翻译
+	initialize.InitMobileForm()
 
-	// 注册验证器及其错误翻译
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		_ = v.RegisterValidation("mobile", myvalidator.ValidateMobile)
-		_ = v.RegisterTranslation("mobile", global.Trans, func(ut ut.Translator) error {
-			return ut.Add("mobile", "{0} 不是正确的手机号！", true)
-		}, func(ut ut.Translator, fe validator.FieldError) string {
-			t, _ := ut.T("mobile", fe.Field())
-			return t
-		})
-	}
+	// 启动服务
+	go func() {
+		err := Routers.Run(fmt.Sprintf("%s:%d", c.Host, c.Port))
+		if err != nil {
+			zap.S().Error("启动失败：", err.Error())
+		}
 
-	err := Routers.Run(fmt.Sprintf("%s:%d", global.SrvConfig.UserApiConfig.Host, global.SrvConfig.UserApiConfig.Port))
-	if err != nil {
-		zap.S().Error("启动失败：", err.Error())
-	}
+	}()
+
+	// 服务注册到 consul
+	serviceUuid, _ := uuid.NewV4()
+	serviceId := fmt.Sprintf("%s", serviceUuid)
+	registerClient := consul.NewRegisterClient(c.ConsulConfig.Host, c.ConsulConfig.Port)
+	registerClient.Regis(c.Name, c.Host, c.Port, c.Tags, serviceId)
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	registerClient.DeRegis(serviceId)
 }

@@ -1,0 +1,16 @@
+{
+    "name":"stock-srv",
+    "host":"127.0.0.1",
+    "tags": ["stock", "srv"],
+    "mysql":{
+        "host":"106.13.213.235",
+        "port":3306,
+        "db":"mshop_stock_srv",
+        "user":"root",
+        "password":"root132456"
+    },
+    "consul":{
+        "host":"106.13.213.235",
+        "port":8500
+    }
+}

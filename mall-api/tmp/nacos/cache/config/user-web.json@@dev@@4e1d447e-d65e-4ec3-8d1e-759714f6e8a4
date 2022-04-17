@@ -1,12 +1,9 @@
 {
   "name": "user-web",
+  "host": "127.0.0.1",
+  "tags": ["user", "web"],
   "user-srv": {
-    "name": "user-srv",
-    "host": "127.0.0.1"
-  },
-  "user-api": {
-    "host": "127.0.0.1",
-    "port": 8080
+    "name": "user-srv"
   },
   "jwt": {
     "key": "VedZNLu&xsltJQaut0hUns!F80X!Rm"

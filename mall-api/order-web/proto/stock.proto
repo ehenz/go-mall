@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+option go_package = "./;proto";
+
+service Stock{
+  rpc SetStock(StockInfo) returns (google.protobuf.Empty);
+  rpc CheckStock(StockInfo) returns (StockInfo);
+  rpc PreSell(SellInfo) returns (google.protobuf.Empty);
+  rpc CancelOrder(SellInfo) returns (google.protobuf.Empty);
+}
+
+message StockInfo{
+  int32 goodsId = 1;
+  int32 stock = 2;
+}
+
+message SellInfo{
+  repeated StockInfo sellInfo = 1;
+}

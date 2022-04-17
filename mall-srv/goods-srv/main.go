@@ -37,7 +37,7 @@ func main() {
 	}
 
 	// 测试时使用 - 固定Port
-	global.SrvConfig.Port = 9999
+	// global.SrvConfig.Port = 9999
 
 	zap.S().Infof(" Listening and serving HTTP on %s:%d\n", global.SrvConfig.Host, global.SrvConfig.Port)
 

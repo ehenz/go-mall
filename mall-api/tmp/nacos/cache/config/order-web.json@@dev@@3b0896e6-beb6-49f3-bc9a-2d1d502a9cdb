@@ -1,0 +1,21 @@
+{
+  "name": "order-web",
+  "host": "127.0.0.1",
+  "tags": ["order", "web"],
+  "goods-srv": {
+    "name": "goods-srv"
+  },
+  "order-srv": {
+    "name": "order-srv"
+  },
+  "stock-srv": {
+    "name": "stock-srv"
+  },
+  "jwt": {
+    "key": "VedZNLu&xsltJQaut0hUns!F80X!Rm"
+  },
+  "consul": {
+    "host": "106.13.213.235",
+    "port": 8500
+  }
+}

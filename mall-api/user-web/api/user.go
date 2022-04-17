@@ -166,8 +166,8 @@ func LoginByPassword(c *gin.Context) {
 				NickName:    rsp.NickName,
 				AuthorityID: uint(rsp.Role),
 				StandardClaims: jwt.StandardClaims{
-					NotBefore: time.Now().Unix(),              // 生效时间
-					ExpiresAt: time.Now().Unix() + 60*60*24*7, // 过期时间 - 7天
+					NotBefore: time.Now().Unix(),               // 生效时间
+					ExpiresAt: time.Now().Unix() + 60*60*24*30, // 过期时间 - 30天
 					Issuer:    "hans",
 				},
 			}

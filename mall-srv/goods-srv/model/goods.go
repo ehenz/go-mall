@@ -55,5 +55,5 @@ type Goods struct {
 	Images          GormList `gorm:"type:varchar(1000);not null"`
 	DescImages      GormList `gorm:"type:varchar(1000);not null"`
 	GoodsFrontImage string   `gorm:"type:varchar(200);not null"`
-	// Stocks          int32    `gorm:"type:int;default:0;not null"`
+	Stocks          int32    `gorm:"type:int;default:0;not null"`
 }

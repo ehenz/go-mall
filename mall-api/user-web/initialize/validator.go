@@ -3,6 +3,7 @@ package initialize
 import (
 	"fmt"
 	"mall-api/user-web/global"
+	myvalidator "mall-api/user-web/validator"
 
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/locales/en"
@@ -35,4 +36,16 @@ func InitTrans(locale string) (err error) {
 		return
 	}
 	return nil
+}
+
+func InitMobileForm() {
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		_ = v.RegisterValidation("mobile", myvalidator.ValidateMobile)
+		_ = v.RegisterTranslation("mobile", global.Trans, func(ut ut.Translator) error {
+			return ut.Add("mobile", "{0} 不是正确的手机号！", true)
+		}, func(ut ut.Translator, fe validator.FieldError) string {
+			t, _ := ut.T("mobile", fe.Field())
+			return t
+		})
+	}
 }

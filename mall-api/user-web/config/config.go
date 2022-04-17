@@ -1,12 +1,18 @@
 package config
 
-type UserSrvConfig struct {
-	Name string `mapstructure:"name" json:"name"`
-	Host string `mapstructure:"host" json:"host"`
-	Port int    `mapstructure:"port" json:"port"`
+type SrvConfig struct {
+	Name          string        `mapstructure:"name" json:"name"`
+	Host          string        `mapstructure:"host" json:"host"`
+	Port          int           `mapstructure:"port" json:"port"`
+	Tags          []string      `mapstructure:"tags" json:"tags"`
+	UserSrvConfig UserSrvConfig `mapstructure:"user-srv" json:"user-srv"`
+	JWTConfig     JWTConfig     `mapstructure:"jwt" json:"jwt"`
+	RedisConfig   RedisConfig   `mapstructure:"redis" json:"redis"`
+	ConsulConfig  ConsulConfig  `mapstructure:"consul" json:"consul"`
 }
 
-type UserApiConfig struct {
+type UserSrvConfig struct {
+	Name string `mapstructure:"name" json:"name"`
 	Host string `mapstructure:"host" json:"host"`
 	Port int    `mapstructure:"port" json:"port"`
 }
@@ -23,15 +29,6 @@ type RedisConfig struct {
 type ConsulConfig struct {
 	Host string `mapstructure:"host" json:"host"`
 	Port int    `mapstructure:"port" json:"port"`
-}
-
-type SrvConfig struct {
-	Name          string        `mapstructure:"name" json:"name"`
-	UserSrvConfig UserSrvConfig `mapstructure:"user-srv" json:"user-srv"`
-	UserApiConfig UserApiConfig `mapstructure:"user-api" json:"user-api"`
-	JWTConfig     JWTConfig     `mapstructure:"jwt" json:"jwt"`
-	RedisConfig   RedisConfig   `mapstructure:"redis" json:"redis"`
-	ConsulConfig  ConsulConfig  `mapstructure:"consul" json:"consul"`
 }
 
 type NacosConfig struct {

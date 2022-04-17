@@ -130,7 +130,7 @@ func (s *GoodsServer) BatchGetGoods(c context.Context, req *pb.BatchGoodsIdInfo)
 
 func (s *GoodsServer) GetGoodsDetail(c context.Context, req *pb.GoodInfoRequest) (*pb.GoodsInfoResponse, error) {
 	var good model.Goods
-	if r := global.DB.First(&good, req.Id); r.RowsAffected == 0 {
+	if r := global.DB.Preload("Category").Preload("Brand").First(&good, req.Id); r.RowsAffected == 0 {
 		return nil, status.Errorf(codes.NotFound, "商品不存在")
 	}
 
@@ -150,7 +150,7 @@ func (s *GoodsServer) CreateGoods(c context.Context, req *pb.CreateGoodsInfo) (*
 		return nil, status.Errorf(codes.InvalidArgument, "品牌不存在")
 	}
 
-	// 文件上传使用 OSS 服务，待完成。
+	// TODO 文件上传使用 OSS 服务，待完成。
 	good := model.Goods{
 		Brand:           brand,
 		BrandId:         brand.ID,
@@ -189,12 +189,12 @@ func (s *GoodsServer) UpdateGoods(c context.Context, req *pb.CreateGoodsInfo) (*
 
 	var category model.Category
 	if result := global.DB.First(&category, req.CategoryId); result.RowsAffected == 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "商品分类不存在")
+		return nil, status.Error(codes.InvalidArgument, "商品分类不存在")
 	}
 
 	var brand model.Brand
 	if result := global.DB.First(&brand, req.BrandId); result.RowsAffected == 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "品牌不存在")
+		return nil, status.Error(codes.InvalidArgument, "品牌不存在")
 	}
 
 	good.Brand = brand
