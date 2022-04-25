@@ -1,6 +1,14 @@
 package handler
 
-import "gorm.io/gorm"
+import (
+	pb "mall-srv/goods-srv/proto"
+
+	"gorm.io/gorm"
+)
+
+type GoodsServer struct {
+	pb.UnimplementedGoodsServer
+}
 
 // Paginate 分页逻辑
 func Paginate(page, pageSize int32) func(db *gorm.DB) *gorm.DB {

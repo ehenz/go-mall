@@ -64,6 +64,9 @@ func main() {
 		}
 	}()
 
+	// 监听rocketmq的库存归还请求
+	initialize.StockRollbackConsumer()
+
 	// 服务注册到 consul
 	serviceUuid, _ := uuid.NewV4()
 	serviceId := fmt.Sprintf("%s", serviceUuid)

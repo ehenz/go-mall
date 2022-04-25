@@ -16,4 +16,5 @@ message StockInfo{
 
 message SellInfo{
   repeated StockInfo sellInfo = 1;
+  string orderSn = 2;
 }

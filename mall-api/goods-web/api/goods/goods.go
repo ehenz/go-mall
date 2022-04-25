@@ -8,6 +8,9 @@ import (
 	pb "mall-api/goods-web/proto"
 	"strconv"
 
+	sentinel "github.com/alibaba/sentinel-golang/api"
+	"github.com/alibaba/sentinel-golang/core/base"
+
 	"go.uber.org/zap"
 
 	"mall-api/goods-web/global"
@@ -16,7 +19,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// List 获取商品的列表
 func List(c *gin.Context) {
 	req := &pb.GoodsFilterRequest{}
 
@@ -62,12 +64,23 @@ func List(c *gin.Context) {
 	brandIdInt, _ := strconv.Atoi(brandId)
 	req.Brand = int32(brandIdInt)
 
-	r, err := global.GoodsSrvClient.GoodsList(context.Background(), req)
+	// Sentinel限流GoodsList访问
+	e, b := sentinel.Entry("goods-list", sentinel.WithTrafficType(base.Inbound))
+	if b != nil {
+		// Blocked. We could get the block reason from the BlockError.
+		c.JSON(http.StatusTooManyRequests, gin.H{
+			"msg": "服务器繁忙，请稍后重试",
+		})
+	}
+	// TODO 更改所有的api接口
+	// 传递gin的Ctx，里面有从路由传递的tracer和start_span
+	r, err := global.GoodsSrvClient.GoodsList(context.WithValue(context.Background(), "ginCtx", c), req)
 	if err != nil {
 		zap.S().Errorw("查询商品列表失败")
 		api.HandleGrpcErrorToHttp(c, err)
 		return
 	}
+	e.Exit()
 
 	rMap := map[string]interface{}{
 		"total": r.Total,

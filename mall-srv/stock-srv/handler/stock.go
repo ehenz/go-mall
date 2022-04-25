@@ -65,8 +65,20 @@ func (s *StockServer) PreSell(c context.Context, req *pb.SellInfo) (*emptypb.Emp
 	//return &emptypb.Empty{}, nil
 
 	// redis 分布式锁模式
+	orderStatus := model.OrderStatus{
+		OrderSn: req.OrderSn,
+		Status:  1,
+	}
+
+	var details []model.OrderDetailItem
+
 	tx := global.DB.Begin()
 	for _, v := range req.SellInfo {
+		details = append(details, model.OrderDetailItem{
+			GoodsId:  v.GoodsId,
+			GoodsNum: v.Stock,
+		})
+
 		mutexName := fmt.Sprintf("goods_%d", v.GoodsId)
 		mutex := global.Rs.NewMutex(mutexName)
 		if err := mutex.Lock(); err != nil {
@@ -92,6 +104,11 @@ func (s *StockServer) PreSell(c context.Context, req *pb.SellInfo) (*emptypb.Emp
 			zap.S().Info("释放redis分布式锁异常")
 			return nil, status.Error(codes.Internal, "释放redis分布式锁异常")
 		}
+	}
+	orderStatus.Detail = details
+	if r := tx.Create(&orderStatus); r.RowsAffected == 0 {
+		tx.Rollback()
+		return nil, status.Error(codes.Internal, "新建订单状态信息失败")
 	}
 	tx.Commit()
 	return &emptypb.Empty{}, nil

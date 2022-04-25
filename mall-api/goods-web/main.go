@@ -36,6 +36,8 @@ func main() {
 	_ = initialize.InitTrans("zh")
 	// 初始化rpc服务客户端
 	initialize.InitSrvClient()
+	// 初始化Sentinel
+	initialize.InitSentinel()
 
 	// 服务注册到 consul
 	serviceUuid, _ := uuid.NewV4()

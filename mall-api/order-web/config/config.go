@@ -10,6 +10,7 @@ type SrvConfig struct {
 	StockSrvConfig StockSrvConfig `json:"stock-srv"`
 	JWTConfig      JWTConfig      `mapstructure:"jwt" json:"jwt"`
 	ConsulConfig   ConsulConfig   `mapstructure:"consul" json:"consul"`
+	Alipay         Alipay         `json:"alipay"`
 }
 
 type GoodsSrvConfig struct {
@@ -37,6 +38,14 @@ type JWTConfig struct {
 type ConsulConfig struct {
 	Host string `mapstructure:"host" json:"host"`
 	Port int    `mapstructure:"port" json:"port"`
+}
+
+type Alipay struct {
+	Appid        string `json:"appid"`
+	PrivateKey   string `json:"private_key"`
+	AliPublicKey string `json:"ali_public_key"`
+	NotifyUrl    string `json:"notify_url"`
+	ReturnUrl    string `json:"return_url"`
 }
 
 type NacosConfig struct {

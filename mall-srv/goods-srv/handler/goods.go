@@ -2,20 +2,19 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"mall-srv/goods-srv/global"
 	"mall-srv/goods-srv/model"
 	pb "mall-srv/goods-srv/proto"
+
+	"github.com/olivere/elastic/v7"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-type GoodsServer struct {
-	pb.UnimplementedGoodsServer
-}
 
 func ModelToResponse(good model.Goods) pb.GoodsInfoResponse {
 	return pb.GoodsInfoResponse{
@@ -50,33 +49,34 @@ func ModelToResponse(good model.Goods) pb.GoodsInfoResponse {
 
 func (s *GoodsServer) GoodsList(c context.Context, req *pb.GoodsFilterRequest) (*pb.GoodsListResponse, error) {
 	// 关键词、新品、热门、价格区间、分类等过滤
+	// 使用es过滤出符合条件的商品id，根据id从mysql获取关系型的数据
 	goodsListResponse := &pb.GoodsListResponse{}
-
-	var goods []model.Goods
 
 	localDB := global.DB.Model(model.Goods{})
 
+	q := elastic.NewBoolQuery()
 	if req.KeyWords != "" {
-		localDB = localDB.Where("name LIKE ?", "%"+req.KeyWords+"%")
+		q = q.Must(elastic.NewMultiMatchQuery(req.KeyWords, "name", "goods_brief"))
 	}
 	if req.IsHot {
-		localDB = localDB.Where("is_hot = ?", req.IsHot)
+		q = q.Filter(elastic.NewTermQuery("is_hot", req.IsHot))
 	}
 	if req.IsNew {
-		localDB = localDB.Where("is_new = ?", req.IsNew)
+		q = q.Filter(elastic.NewTermQuery("is_new", req.IsHot))
 	}
 	if req.PriceMin > 0 {
-		localDB = localDB.Where("shop_price >= ?", req.PriceMin)
+		q = q.Filter(elastic.NewRangeQuery("shop_price").Gte(req.PriceMin))
 	}
 	if req.PriceMax > 0 {
-		localDB = localDB.Where("shop_price <= ?", req.PriceMax)
+		q = q.Filter(elastic.NewRangeQuery("shop_price").Lte(req.PriceMax))
 	}
 	if req.Brand > 0 {
-		localDB = localDB.Where("brand_id = ?", req.Brand)
+		q = q.Filter(elastic.NewTermQuery("brands_id", req.Brand))
 	}
 
 	// 分类
 	var subQuery string
+	categoryIds := make([]interface{}, 0)
 	if req.TopCategory > 0 {
 		var category model.Category
 		if r := global.DB.First(&category, req.TopCategory); r.RowsAffected == 0 {
@@ -90,14 +90,47 @@ func (s *GoodsServer) GoodsList(c context.Context, req *pb.GoodsFilterRequest) (
 		} else if category.Level == 3 {
 			subQuery = fmt.Sprintf("select id from category WHERE id=%d", req.TopCategory)
 		}
-		localDB = localDB.Where(fmt.Sprintf("category_id in (%s)", subQuery))
+
+		type Result struct {
+			ID int32 `json:"id"`
+		}
+		var results []Result
+
+		global.DB.Model(model.Category{}).Raw(subQuery).Scan(&results)
+
+		for _, v := range results {
+			categoryIds = append(categoryIds, v.ID)
+		}
+
+		q = q.Filter(elastic.NewTermsQuery("brands_id", categoryIds...))
 	}
 
-	var count int64
-	localDB.Count(&count)
-	goodsListResponse.Total = int32(count)
+	if req.Pages == 0 {
+		req.Pages = 0
+	}
 
-	r := localDB.Preload("Category").Preload("Brand").Scopes(Paginate(req.Pages, req.PagePerNums)).Find(&goods)
+	switch {
+	case req.PagePerNums > 100:
+		req.PagePerNums = 100
+	case req.PagePerNums <= 0:
+		req.PagePerNums = 10
+	}
+
+	esRes, err := global.EsClient.Search().Index(model.EsGoods{}.GetIndexName()).Query(q).From(int(req.Pages)).Size(int(req.PagePerNums)).Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	goodsListResponse.Total = int32(esRes.Hits.TotalHits.Value)
+
+	var goodsIds []int32
+	for _, v := range esRes.Hits.Hits {
+		goods := model.EsGoods{}
+		json.Unmarshal(v.Source, &goods)
+		goodsIds = append(goodsIds, goods.ID)
+	}
+
+	var goods []model.Goods
+	r := localDB.Preload("Category").Preload("Brand").Find(&goods, goodsIds)
 	if r.Error != nil {
 		return nil, r.Error
 	}
@@ -170,7 +203,13 @@ func (s *GoodsServer) CreateGoods(c context.Context, req *pb.CreateGoodsInfo) (*
 		OnSale:          req.OnSale,
 	}
 
-	global.DB.Save(&good)
+	tx := global.DB.Begin()
+	result := tx.Save(&good)
+	if result.Error != nil {
+		tx.Rollback()
+		return nil, result.Error
+	}
+	tx.Commit()
 	return &pb.GoodsInfoResponse{Id: good.ID}, nil
 }
 func (s *GoodsServer) DeleteGoods(c context.Context, req *pb.DeleteGoodsInfo) (*emptypb.Empty, error) {

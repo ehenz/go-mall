@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"mall-api/order-web/global"
 	pb "mall-api/order-web/proto"
+	"mall-api/order-web/utils/otgrpc"
+
+	"github.com/opentracing/opentracing-go"
 
 	_ "github.com/mbobakov/grpc-consul-resolver" // It's important
 
@@ -20,6 +23,7 @@ func InitSrvClient() {
 		fmt.Sprintf("consul://%s:%d/%s?wait=14s", c.ConsulConfig.Host, c.ConsulConfig.Port, c.GoodsSrvConfig.Name),
 		grpc.WithInsecure(),
 		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`), // 轮询
+		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())),
 	)
 	if err != nil {
 		zap.S().Errorw("商品服务初始化失败", "msg", err.Error())

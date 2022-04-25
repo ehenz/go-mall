@@ -28,6 +28,7 @@ func main() {
 	initialize.InitLogger()
 	initialize.InitConfig(*debug)
 	initialize.InitDB()
+	initialize.InitEs()
 
 	// 动态分配一个可用端口
 	var err error

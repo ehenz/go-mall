@@ -7,6 +7,7 @@ import (
 	"mall-api/order-web/global"
 	model2 "mall-api/order-web/model"
 	pb "mall-api/order-web/proto"
+	"mall-api/order-web/utils/pay"
 	"net/http"
 	"strconv"
 
@@ -32,7 +33,7 @@ func List(c *gin.Context) {
 	orderReq.Pages = int32(pInt)
 	orderReq.PagePerNums = int32(pNumInt)
 
-	rsp, err := global.OrderSrvClient.OrderList(context.Background(), &orderReq)
+	rsp, err := global.OrderSrvClient.OrderList(context.WithValue(context.Background(), "ginCtx", c), &orderReq)
 	if err != nil {
 		api.HandleGrpcErrorToHttp(c, err)
 		return
@@ -67,9 +68,10 @@ func New(c *gin.Context) {
 		return
 	}
 
-	// TODO 返回支付宝支付url
+	alipayURL := pay.AlipayPagePay(rsp.OrderSn, strconv.FormatFloat(float64(rsp.Total), 'f', 2, 64))
 	c.JSON(http.StatusOK, gin.H{
-		"orderId": rsp.Id,
+		"orderId":    rsp.Id,
+		"alipay_url": alipayURL,
 	})
 
 }

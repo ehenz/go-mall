@@ -1,0 +1,22 @@
+{
+    "name":"userop-web",
+    "host":"127.0.0.1",
+    "tags": ["userop", "web"],
+    "mysql":{
+        "host":"106.13.213.235",
+        "port":3306,
+        "db":"mshop_userop_srv",
+        "user":"root",
+        "password":"root132456"
+    },
+    "consul":{
+        "host":"106.13.213.235",
+        "port":8500
+    },
+    "userop-srv": {
+        "name": "userop-srv"
+    },
+    "goods-srv": {
+        "name": "goods-srv"
+    }
+}

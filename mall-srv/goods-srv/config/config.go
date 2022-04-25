@@ -8,6 +8,11 @@ type MysqlConfig struct {
 	Password string `mapstructure:"password" json:"password"`
 }
 
+type EsConfig struct {
+	Host string `mapstructure:"host" json:"host"`
+	Port int    `mapstructure:"port" json:"port"`
+}
+
 type ConsulConfig struct {
 	Host string `mapstructure:"host" json:"host"`
 	Port int    `mapstructure:"port" json:"port"`
@@ -20,6 +25,7 @@ type SrvConfig struct {
 	Tags         []string     `json:"tags"`
 	MysqlConfig  MysqlConfig  `mapstructure:"mysql" json:"mysql"`
 	ConsulConfig ConsulConfig `mapstructure:"consul" json:"consul"`
+	EsConfig     EsConfig     `json:"es"`
 }
 
 type NacosConfig struct {

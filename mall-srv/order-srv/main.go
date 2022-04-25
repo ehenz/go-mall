@@ -8,6 +8,7 @@ import (
 	"mall-srv/order-srv/initialize"
 	"mall-srv/order-srv/proto"
 	"mall-srv/order-srv/utils"
+	"mall-srv/order-srv/utils/otgrpc"
 	"mall-srv/order-srv/utils/register/consul"
 	"net"
 	"os"
@@ -32,6 +33,7 @@ func main() {
 	initialize.InitConfig(*debug) // 初始化配置
 	initialize.InitDB()           // 初始化数据库
 	initialize.InitServers()      // 初始化需要用到的第三方服务
+	initialize.InitJaegerTrace()  // InitJaegerTracer
 
 	// 动态分配一个可用端口
 	var err error
@@ -44,7 +46,7 @@ func main() {
 
 	zap.S().Infof(" Listening and serving HTTP on %s:%d\n", global.SrvConfig.Host, global.SrvConfig.Port)
 
-	server := grpc.NewServer()
+	server := grpc.NewServer(grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(global.Tracer)))
 	// 注册用户服务
 	proto.RegisterOrderServer(server, &handler.OrderServer{})
 	// 注册 consul 官方的rpc健康检查服务
@@ -64,6 +66,9 @@ func main() {
 		}
 	}()
 
+	// OrderTimeoutConsumer
+	initialize.OrderTimeoutConsumer()
+
 	// 服务注册到 consul
 	serviceUuid, _ := uuid.NewV4()
 	serviceId := fmt.Sprintf("%s", serviceUuid)
@@ -75,4 +80,5 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	registerClient.DeRegis(serviceId)
+	global.Closer.Close()
 }

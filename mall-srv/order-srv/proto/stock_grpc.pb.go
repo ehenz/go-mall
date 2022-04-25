@@ -207,5 +207,5 @@ var Stock_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "order.proto",
+	Metadata: "stock.proto",
 }

@@ -1,10 +1,16 @@
 package main
 
 import (
+	"context"
 	"log"
+	"mall-srv/goods-srv/global"
+	"mall-srv/goods-srv/initialize"
 	"mall-srv/goods-srv/model"
 	"os"
+	"strconv"
 	"time"
+
+	"github.com/olivere/elastic/v7"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -12,8 +18,8 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-// 生成表结构
-func main() {
+// InitMySQL 生成MySQL表结构
+func InitMySQL() {
 	dsn := "root:root@tcp(106.13.213.235:3306)/mshop_goods_srv?charset=utf8mb4&parseTime=True&loc=Local"
 
 	newLogger := logger.New(
@@ -39,4 +45,46 @@ func main() {
 	_ = db.AutoMigrate(
 		&model.Goods{},
 	)
+}
+
+func SyncMysqlToEs() {
+	host := "http://106.13.214.17:9200"
+	l := log.New(os.Stdout, "es", log.LstdFlags)
+	EsClient, err := elastic.NewClient(elastic.SetURL(host), elastic.SetSniff(false), elastic.SetTraceLog(l))
+	if err != nil {
+		panic(err)
+	}
+
+	initialize.InitDB()
+
+	var goods []model.Goods
+	global.DB.Find(&goods)
+	for _, v := range goods {
+		esgoods := model.EsGoods{
+			ID:          v.ID,
+			CategoryID:  v.CategoryId,
+			BrandsID:    v.BrandId,
+			OnSale:      v.OnSale,
+			ShipFree:    v.ShipFree,
+			IsNew:       v.IsNew,
+			IsHot:       v.IsHot,
+			Name:        v.Name,
+			ClickNum:    v.ClickNum,
+			SoldNum:     v.SoldNum,
+			FavNum:      v.FavNum,
+			MarketPrice: v.MarketPrice,
+			GoodsBrief:  v.GoodsBrief,
+			ShopPrice:   v.ShopPrice,
+		}
+
+		_, err := EsClient.Index().Index(model.EsGoods{}.GetIndexName()).BodyJson(esgoods).Id(strconv.Itoa(int(esgoods.ID))).Do(context.Background())
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func main() {
+	initialize.InitConfig(true)
+	SyncMysqlToEs()
 }

@@ -107,3 +107,15 @@
 2022-04-10T18:38:45.190+0800	[34mINFO[0m	config_client/config_client.go:421	[client.ListenConfig] no change
 2022-04-10T18:38:45.202+0800	[34mINFO[0m	config_client/config_proxy.go:180	[client.ListenConfig] request params:map[Listening-Configs:user-web.jsondev09101e27d3e03224f5318e72c438c51f4e1d447e-d65e-4ec3-8d1e-759714f6e8a4 tenant:4e1d447e-d65e-4ec3-8d1e-759714f6e8a4] header:map[Content-Type:application/x-www-form-urlencoded;charset=utf-8 Long-Pulling-Timeout:30000 accessKey: secretKey:] 
 
+2022-04-18T23:45:00.437+0800	[31mERROR[0m	nacos_server/nacos_server.go:194	api</v1/cs/configs>,method:<GET>, params:<{"dataId":"userop-web.json","group":"dev","tenant":"3b0896e6-beb6-49f3-bc9a-2d1d502a9cdb"}>, call domain error:<[404] config data not exist
+> , result:<config data not exist
+>
+2022-04-18T23:45:00.453+0800	[31mERROR[0m	nacos_server/nacos_server.go:194	api</v1/cs/configs>,method:<GET>, params:<{"dataId":"userop-web.json","group":"dev","tenant":"3b0896e6-beb6-49f3-bc9a-2d1d502a9cdb"}>, call domain error:<[404] config data not exist
+> , result:<config data not exist
+>
+2022-04-18T23:45:00.468+0800	[31mERROR[0m	nacos_server/nacos_server.go:194	api</v1/cs/configs>,method:<GET>, params:<{"dataId":"userop-web.json","group":"dev","tenant":"3b0896e6-beb6-49f3-bc9a-2d1d502a9cdb"}>, call domain error:<[404] config data not exist
+> , result:<config data not exist
+>
+2022-04-18T23:45:00.468+0800	[31mERROR[0m	config_client/config_client.go:191	get config from server error:[404] config data not exist
+ 
+2022-04-18T23:45:00.468+0800	[33mWARN[0m	config_client/config_client.go:196	[client.GetConfig] config not found, dataId: userop-web.json, group: dev, namespaceId: 3b0896e6-beb6-49f3-bc9a-2d1d502a9cdb.
