@@ -48,8 +48,9 @@ func (r *Register) Regis(name string, host string, port int, tags []string, id s
 	err := client.Agent().ServiceRegister(regis)
 	if err != nil {
 		zap.S().Errorw("服务注册失败：", err.Error())
+	} else {
+		zap.S().Info("服务注册成功")
 	}
-	zap.S().Info("服务注册成功")
 }
 
 func (r *Register) DeRegis(serviceId string) {
@@ -60,6 +61,7 @@ func (r *Register) DeRegis(serviceId string) {
 	err := client.Agent().ServiceDeregister(serviceId)
 	if err != nil {
 		zap.S().Errorw("服务注销失败")
+	} else {
+		zap.S().Info("服务注销成功")
 	}
-	zap.S().Info("服务注销成功")
 }
