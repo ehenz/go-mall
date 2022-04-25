@@ -39,7 +39,7 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println(ip)
-	c.Host = ip
+	c.Host = ""
 
 	// 获取一个可用端口
 	debug := flag.Bool("debug", true, "是否以debug模式启动")
