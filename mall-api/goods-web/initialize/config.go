@@ -14,13 +14,10 @@ import (
 )
 
 // InitConfig 使用 nacos 作为配置中心进行初始化
-func InitConfig(debug bool) {
+func InitConfig() {
 	// 从本地文件读取 nacos 配置信息
 	var configFileName string
 	configFileName = "goods-web/nacos-dev.yaml"
-	if debug == false {
-		configFileName = "goods-web/nacos-pro.yaml"
-	}
 	v := viper.New()
 	v.SetConfigFile(configFileName)
 	_ = v.ReadInConfig()

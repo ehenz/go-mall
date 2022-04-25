@@ -1,6 +1,8 @@
 package utils
 
-import "net"
+import (
+	"net"
+)
 
 // GetFreePort 动态获取一个可用的端口
 func GetFreePort() (int, error) {

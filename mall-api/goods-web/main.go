@@ -1,16 +1,13 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"mall-api/goods-web/global"
 	"mall-api/goods-web/initialize"
 	"mall-api/goods-web/utils"
 	"mall-api/goods-web/utils/register/consul"
-	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/nacos-group/nacos-sdk-go/inner/uuid"
@@ -18,41 +15,15 @@ import (
 	"go.uber.org/zap"
 )
 
-func GetOutBoundIP() (ip string, err error) {
-	conn, err := net.Dial("udp", "8.8.8.8:53")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-	fmt.Println(localAddr.String())
-	ip = strings.Split(localAddr.String(), ":")[0]
-	return
-}
-
 func main() {
 	c := global.SrvConfig
 
-	// 获取本机ip地址 - 服务器用
-	ip, err := GetOutBoundIP()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(ip)
-	c.Host = ""
-
-	// 获取一个可用端口
-	debug := flag.Bool("debug", true, "是否以debug模式启动")
-	if *debug == true {
-		c.Port = 8081
-	} else {
-		c.Port, _ = utils.GetFreePort()
-	}
+	c.Port, _ = utils.GetFreePort()
 
 	// 初始化logger
 	initialize.InitLogger()
 	// 初始化config
-	initialize.InitConfig(*debug)
+	initialize.InitConfig()
 	// 初始化routers
 	Routers := initialize.Routers()
 	// 初始化表单验证翻译功能
@@ -73,7 +44,6 @@ func main() {
 		if err != nil {
 			zap.S().Error("启动失败：", err.Error())
 		}
-
 	}()
 
 	quit := make(chan os.Signal)
