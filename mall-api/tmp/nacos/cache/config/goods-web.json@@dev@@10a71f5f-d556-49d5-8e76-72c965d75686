@@ -1,6 +1,5 @@
 {
   "name": "goods-web",
-  "host": "127.0.0.1",
   "tags": ["goods", "web"],
   "goods-srv": {
     "name": "goods-srv"
