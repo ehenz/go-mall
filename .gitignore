@@ -3,3 +3,5 @@ nacos-dev.yaml
 # temp file
 /mall-api/tmp
 /mall-srv/tmp
+# IDEA
+.idea
