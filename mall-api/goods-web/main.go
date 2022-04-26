@@ -18,6 +18,7 @@ import (
 func main() {
 	c := global.SrvConfig
 
+	// 若没有在nacos配置端口号，则自动分配一个可用端口
 	c.Port, _ = utils.GetFreePort()
 
 	// 初始化logger

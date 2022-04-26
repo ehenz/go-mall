@@ -1,5 +1,7 @@
 {
   "name": "goods-web",
+  "host": "106.13.214.17",
+  "port":9999,
   "tags": ["goods", "web"],
   "goods-srv": {
     "name": "goods-srv"
