@@ -5,3 +5,4 @@ nacos-dev.yaml
 /mall-srv/tmp
 # IDEA
 .idea
+**/.idea
